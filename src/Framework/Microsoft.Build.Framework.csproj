@@ -132,6 +132,7 @@
     <Compile Include="TaskStartedEventArgs.cs">
       <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
     </Compile>
+    <Compile Include="TestLogger.cs" />
     <Compile Include="XamlTypes\Argument.cs" />
     <Compile Include="XamlTypes\BaseProperty.cs" />
     <Compile Include="XamlTypes\BoolProperty.cs" />
@@ -155,10 +156,16 @@
     <Compile Include="XamlTypes\StringProperty.cs" />
     <Compile Include="XamlTypes\ValueEditor.cs" />
     <None Include="Event args classes.cd" />
+    <None Include="packages.config" />
     <!-- Win32 RC Files -->
     <RCResourceFile Include="native.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />

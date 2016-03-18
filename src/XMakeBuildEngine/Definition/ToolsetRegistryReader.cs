@@ -21,6 +21,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Collections;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Internal;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Build.Evaluation
 {
@@ -59,6 +60,7 @@ namespace Microsoft.Build.Evaluation
         internal ToolsetRegistryReader(PropertyDictionary<ProjectPropertyInstance> environmentProperties, PropertyDictionary<ProjectPropertyInstance> globalProperties)
             : this(environmentProperties, globalProperties, new RegistryKeyWrapper(MSBuildRegistryPath))
         {
+            TestLogger.TestLog();
         }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace Microsoft.Build.Evaluation
         internal ToolsetRegistryReader(PropertyDictionary<ProjectPropertyInstance> environmentProperties, PropertyDictionary<ProjectPropertyInstance> globalProperties, RegistryKeyWrapper msbuildRegistryWrapper)
             : base(environmentProperties, globalProperties)
         {
+            TestLogger.TestLog();
             error.VerifyThrowArgumentNull(msbuildRegistryWrapper, "msbuildRegistryWrapper");
 
             _msbuildRegistryWrapper = msbuildRegistryWrapper;
@@ -97,7 +100,7 @@ namespace Microsoft.Build.Evaluation
                 {
                     // For the purposes of error location, use the registry path instead of a file name
                     IElementLocation location = new RegistryLocation(_msbuildRegistryWrapper.Name + "\\ToolsVersions\\" + toolsVersionName);
-
+                    TestLogger.TestLog($"{toolsVersionName} - {location}");
                     yield return new ToolsetPropertyDefinition(toolsVersionName, string.Empty, location);
                 }
             }

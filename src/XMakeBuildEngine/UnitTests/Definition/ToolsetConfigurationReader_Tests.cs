@@ -14,8 +14,6 @@ using Microsoft.Build.Shared;
 
 using ToolsetConfigurationSection = Microsoft.Build.Evaluation.ToolsetConfigurationSection;
 using Xunit;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Build.UnitTests.Definition
 {
@@ -569,11 +567,14 @@ namespace Microsoft.Build.UnitTests.Definition
             string defaultToolsVersion = reader.ReadToolsets(toolsets, new PropertyDictionary<ProjectPropertyInstance>(), new PropertyDictionary<ProjectPropertyInstance>(), true, out msbuildOverrideTasksPath, out defaultOverrideToolsVersion);
 
             Dictionary<MSBuildExtensionsPathReferenceKind, IList<string>> pathsTable = toolsets["2.0"].MSBuildExtensionsPathSearchPathsTable;
+#if FALSE
             if (NativeMethodsShared.IsWindows)
-            {
+#endif
+                {
                 CheckPathsTable(pathsTable, MSBuildExtensionsPathReferenceKind.Default, new string[] {"c:\\foo"});
                 CheckPathsTable(pathsTable, MSBuildExtensionsPathReferenceKind.Path64, new string[] {"c:\\foo64", "c:\\bar64"});
             }
+#if FALSE
             else if (NativeMethodsShared.IsOSX)
             {
                 CheckPathsTable(pathsTable, MSBuildExtensionsPathReferenceKind.Default, new string[] {"/tmp/foo"});
@@ -583,6 +584,7 @@ namespace Microsoft.Build.UnitTests.Definition
             {
                 CheckPathsTable(pathsTable, MSBuildExtensionsPathReferenceKind.Default, new string[] {"/tmp/bar"});
             }
+#endif
         }
 
         private void CheckPathsTable(Dictionary<MSBuildExtensionsPathReferenceKind, IList<string>> pathsTable, MSBuildExtensionsPathReferenceKind kind, string[] expectedPaths)

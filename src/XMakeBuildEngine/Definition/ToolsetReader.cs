@@ -21,6 +21,7 @@ using InvalidToolsetDefinitionException = Microsoft.Build.Exceptions.InvalidTool
 using InvalidProjectFileException = Microsoft.Build.Exceptions.InvalidProjectFileException;
 using ReservedPropertyNames = Microsoft.Build.Internal.ReservedPropertyNames;
 using Microsoft.Build.Internal;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Build.Evaluation
 {
@@ -114,14 +115,17 @@ namespace Microsoft.Build.Evaluation
             string overrideTasksPathFromConfiguration = null;
             string defaultOverrideToolsVersionFromConfiguration = null;
 
+            TestLogger.TestLog("About to check config reader");
             ToolsetConfigurationReader configurationReaderToUse = null;
             if ((locations & ToolsetDefinitionLocations.ConfigurationFile) == ToolsetDefinitionLocations.ConfigurationFile)
             {
+                TestLogger.TestLog("config.2");
                 if (configurationReader == null && ToolsetConfigurationReaderHelpers.ConfigurationFileMayHaveToolsets())
                 {
                     // We haven't been passed in a fake configuration reader by a unit test,
                     // and it looks like we have a .config file to read, so create a real
                     // configuration reader
+                    TestLogger.TestLog("new config reader");
                     configurationReader = new ToolsetConfigurationReader(environmentProperties, globalProperties);
                 }
 
@@ -130,8 +134,8 @@ namespace Microsoft.Build.Evaluation
                     configurationReaderToUse = configurationReader == null ? new ToolsetConfigurationReader(environmentProperties, globalProperties) : configurationReader;
 
                     // Accumulation of properties is okay in the config file because it's deterministically ordered
-                    defaultToolsVersionFromConfiguration =
-                    configurationReaderToUse.ReadToolsets(toolsets, globalProperties, initialProperties, true /* accumulate properties */, out overrideTasksPathFromConfiguration, out defaultOverrideToolsVersionFromConfiguration);
+                    defaultToolsVersionFromConfiguration = configurationReaderToUse.ReadToolsets(toolsets, globalProperties, initialProperties, true /* accumulate properties */, out overrideTasksPathFromConfiguration, out defaultOverrideToolsVersionFromConfiguration);
+
                 }
             }
 
@@ -215,6 +219,13 @@ namespace Microsoft.Build.Evaluation
                     }
                 }
             }
+            
+            TestLogger.TestLog($"Finished - {defaultToolsVersion}", new Tuple<string, object>("toolsets", toolsets),
+                new Tuple<string, object>("registryReader", registryReader),
+                new Tuple<string, object>("configurationReade", configurationReader),
+                new Tuple<string, object>("environmentProperties", environmentProperties),
+                new Tuple<string, object>("globalProperties", globalProperties),
+                new Tuple<string, object>("locations", locations));
 
             return defaultToolsVersion;
         }
@@ -294,6 +305,7 @@ namespace Microsoft.Build.Evaluation
         {
             foreach (ToolsetPropertyDefinition toolsVersion in ToolsVersions)
             {
+                TestLogger.TestLog($"toolsVersion is {toolsVersion}", new Tuple<string, object>("toolsversion", toolsVersion));
                 // If there's already an existing toolset, it's of higher precedence, so
                 // don't even bother to read this toolset in.  
                 if (!toolsets.ContainsKey(toolsVersion.Name))
@@ -325,6 +337,7 @@ namespace Microsoft.Build.Evaluation
             bool accumulateProperties
             )
         {
+            TestLogger.TestLog($"toolsVersion is {toolsVersion}", new Tuple<string, object>("toolsversion", toolsVersion));
             // Initial properties is the set of properties we're going to use to expand property expressions like $(foo)
             // in the values we read out of the registry or config file. We'll add to it as we pick up properties (including binpath)
             // from the registry or config file, so that properties there can be referenced in values below them.
@@ -390,6 +403,7 @@ namespace Microsoft.Build.Evaluation
                 InvalidToolsetDefinitionException.Throw("ErrorCreatingToolset", toolsVersion.Name, e.Message);
             }
 
+            TestLogger.TestLog($"done adding reading toolset", new Tuple<string, object>("toolset", toolset));
             return toolset;
         }
 
@@ -399,9 +413,12 @@ namespace Microsoft.Build.Evaluation
         /// </summary>
         private static string GetOSNameForExtensionsPath()
         {
+#if FALSE
             if (NativeMethodsShared.IsWindows)
             {
+#endif
                 return "windows";
+#if FALSE
             }
 
             if (NativeMethodsShared.IsOSX)
@@ -410,6 +427,7 @@ namespace Microsoft.Build.Evaluation
             }
 
             return "unix";
+#endif
         }
 
         /// <summary>
@@ -421,12 +439,14 @@ namespace Microsoft.Build.Evaluation
             string root,
             string toolsPath)
         {
+
+#if FALSE
             // Create standard properties. On Mono they are well known
             if (!NativeMethodsShared.IsMono)
             {
                 return null;
             }
-
+#endif
             PropertyDictionary<ProjectPropertyInstance> buildProperties =
                 new PropertyDictionary<ProjectPropertyInstance>();
             AppendStandardProperties(buildProperties, globalProperties, version, root, toolsPath);
@@ -444,6 +464,7 @@ namespace Microsoft.Build.Evaluation
             string root,
             string toolsPath)
         {
+#if FALSE
             if (NativeMethodsShared.IsMono)
             {
                 var v4Dir = FrameworkLocationHelper.GetPathToDotNetFrameworkV40(DotNetFrameworkArchitecture.Current)
@@ -505,6 +526,7 @@ namespace Microsoft.Build.Evaluation
                     properties.Set(ProjectPropertyInstance.Create("SDK40ToolsPath", v4Dir, true, false));
                 }
             }
+#endif
         }
 
         /// <summary>

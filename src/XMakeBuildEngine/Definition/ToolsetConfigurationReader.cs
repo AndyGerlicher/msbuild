@@ -20,6 +20,7 @@ using Microsoft.Build.Shared;
 using ErrorUtilities = Microsoft.Build.Shared.ErrorUtilities;
 using InvalidToolsetDefinitionException = Microsoft.Build.Exceptions.InvalidToolsetDefinitionException;
 using Microsoft.Build.Internal;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Build.Evaluation
 {
@@ -96,6 +97,7 @@ namespace Microsoft.Build.Evaluation
                             InvalidToolsetDefinitionException.Throw("InvalidToolsetValueInConfigFileValue", location.LocationString);
                         }
 
+                        TestLogger.TestLog($"Config tools version {toolset.toolsVersion}: {location}");
                         yield return new ToolsetPropertyDefinition(toolset.toolsVersion, string.Empty, location);
                     }
                 }
@@ -227,6 +229,8 @@ namespace Microsoft.Build.Evaluation
         /// </summary>
         protected override Dictionary<MSBuildExtensionsPathReferenceKind, IList<string>> GetMSBuildExtensionPathsSearchPathsTable(string toolsVersion, string os)
         {
+            TestLogger.TestLog();
+
             Dictionary<MSBuildExtensionsPathReferenceKind, IList<string>> kindToPathsCache;
             var key = toolsVersion + ":" + os;
             if (_kindToPathsCachePerToolsVersion.TryGetValue(key, out kindToPathsCache))
@@ -255,6 +259,7 @@ namespace Microsoft.Build.Evaluation
             foreach (MSBuildExtensionsPathReferenceKind kind in allPaths)
             {
                 kindToPathsCache[kind] = ComputeDistinctListOfFallbackPathsFor(kind, propertyCollection);
+                TestLogger.TestLog($"Adding {kind}");
             }
 
             return kindToPathsCache;
