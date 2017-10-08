@@ -201,6 +201,11 @@ namespace Microsoft.Build.Execution
         private bool _onlyLogCriticalEvents = false;
 
         /// <summary>
+        /// <see cref="LogDiagnosticEvents"/>
+        /// </summary>
+        private bool _logDiagnosticEvents = true;
+
+        /// <summary>
         /// A list of warnings to treat as errors.
         /// </summary>
         private ISet<string> _warningsAsErrors = null;
@@ -279,6 +284,7 @@ namespace Microsoft.Build.Execution
             _onlyLogCriticalEvents = projectCollection.OnlyLogCriticalEvents;
             _toolsetDefinitionLocations = projectCollection.ToolsetLocations;
             _defaultToolsVersion = projectCollection.DefaultToolsVersion;
+            _logDiagnosticEvents = projectCollection.LogDiagnosticEvents;
 
             _globalProperties = new PropertyDictionary<ProjectPropertyInstance>(projectCollection.GlobalPropertiesCollection);
         }
@@ -329,6 +335,7 @@ namespace Microsoft.Build.Execution
             _useSynchronousLogging = other._useSynchronousLogging;
             _disableInProcNode = other._disableInProcNode;
             _logTaskInputs = other._logTaskInputs;
+            _logDiagnosticEvents = other._logDiagnosticEvents;
             _logInitialPropertiesAndItems = other._logInitialPropertiesAndItems;
             _warningsAsErrors = other._warningsAsErrors == null ? null : new HashSet<string>(other._warningsAsErrors, StringComparer.OrdinalIgnoreCase);
             _warningsAsMessages = other._warningsAsMessages == null ? null : new HashSet<string>(other._warningsAsMessages, StringComparer.OrdinalIgnoreCase);
@@ -597,6 +604,17 @@ namespace Microsoft.Build.Execution
         {
             get { return _onlyLogCriticalEvents; }
             set { _onlyLogCriticalEvents = value; }
+        }
+
+        /// <summary>
+        /// Flag indicating if the build engine should produce and send diagnostic messages (<see cref="MessageImportance.Low"/>.
+        /// Many of these events are memory intensive to compute and this should be set to false when no Loggers are set to
+        /// receive Diagnostic level events.
+        /// </summary>
+        public bool LogDiagnosticEvents
+        {
+            get { return _logDiagnosticEvents; }
+            set { _logDiagnosticEvents = value; }
         }
 
         /// <summary>
@@ -918,6 +936,7 @@ namespace Microsoft.Build.Execution
             translator.Translate(ref _shutdownInProcNodeOnBuildFinish);
             translator.Translate(ref _logTaskInputs);
             translator.Translate(ref _logInitialPropertiesAndItems);
+            translator.Translate(ref _logDiagnosticEvents);
 
             // ProjectRootElementCache is not transmitted.
             // ResetCaches is not transmitted.

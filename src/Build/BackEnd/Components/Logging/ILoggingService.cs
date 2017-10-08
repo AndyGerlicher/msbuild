@@ -55,7 +55,7 @@ namespace Microsoft.Build.BackEnd.Logging
 
         /// <summary>
         /// Provide the current state of the loggingService.
-        /// Is it Inistantiated
+        /// Is it Instantiated
         /// Has it been Initialized
         /// Is it starting to shutdown
         /// Has it shutdown
@@ -81,6 +81,13 @@ namespace Microsoft.Build.BackEnd.Logging
             get;
             set;
         }
+
+        /// <summary>
+        /// Flag indicating if the build engine should produce and send diagnostic messages (<see cref="MessageImportance.Low"/>.
+        /// Many of these events are memory intensive to compute and this should be set to false when no Loggers are set to
+        /// receive Diagnostic level events.
+        /// </summary>
+        bool LogDiagnosticEvents { get; set; }
 
         /// <summary>
         /// Number of nodes in the system when it was initially started

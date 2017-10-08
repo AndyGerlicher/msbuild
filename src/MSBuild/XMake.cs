@@ -963,7 +963,7 @@ namespace Microsoft.Build.CommandLine
                 // on diagnostic. This should be changed to pipe it through properly,
                 // perhaps as part of a fuller tracing feature.
                 bool logTaskInputs = verbosity == LoggerVerbosity.Diagnostic;
-
+                bool logDiagnosticEvents = verbosity == LoggerVerbosity.Diagnostic;
                 if (!logTaskInputs)
                 {
                     foreach (var logger in loggers)
@@ -974,6 +974,7 @@ namespace Microsoft.Build.CommandLine
                            )
                         {
                             logTaskInputs = true;
+                            logDiagnosticEvents = true;
                             break;
                         }
                     }
@@ -991,6 +992,7 @@ namespace Microsoft.Build.CommandLine
                                )
                             {
                                 logTaskInputs = true;
+                                logDiagnosticEvents = true;
                                 break;
                             }
                         }
@@ -998,7 +1000,6 @@ namespace Microsoft.Build.CommandLine
                 }
 
                 ToolsetDefinitionLocations toolsetDefinitionLocations = ToolsetDefinitionLocations.Default;
-
                 projectCollection = new ProjectCollection
                 (
                     globalProperties,
@@ -1006,7 +1007,8 @@ namespace Microsoft.Build.CommandLine
                     null,
                     toolsetDefinitionLocations,
                     cpuCount,
-                    onlyLogCriticalEvents
+                    onlyLogCriticalEvents,
+                    logDiagnosticEvents
                 );
 
                 if (debugger)

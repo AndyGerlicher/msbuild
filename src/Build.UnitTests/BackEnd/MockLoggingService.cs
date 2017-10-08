@@ -96,6 +96,8 @@ namespace Microsoft.Build.UnitTests.BackEnd
             }
         }
 
+        public bool LogDiagnosticEvents { get; set; } = true;
+
         /// <summary>
         /// Returns the number of initial nodes.
         /// </summary>

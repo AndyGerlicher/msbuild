@@ -61,6 +61,11 @@ namespace Microsoft.Build.Evaluation
         /// The <see cref="ProjectCollection.SkipEvaluation"/> property changed.
         /// </summary>
         SkipEvaluation,
+
+        /// <summary>
+        /// The <see cref="ProjectCollection.LogDiagnosticEvents"/> property changed.
+        /// </summary>
+        LogDiagnosticEvents
     }
 
     /// <summary>

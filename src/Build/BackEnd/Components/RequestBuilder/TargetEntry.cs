@@ -352,7 +352,7 @@ namespace Microsoft.Build.BackEnd
                 _targetResult = new TargetResult(Array.Empty<TaskItem>(), new WorkUnitResult(WorkUnitResultCode.Skipped, WorkUnitActionCode.Continue, null));
                 _state = TargetEntryState.Completed;
 
-                if (!projectLoggingContext.LoggingService.OnlyLogCriticalEvents)
+                if (projectLoggingContext.LoggingService.LogDiagnosticEvents)
                 {
                     // Expand the expression for the Log.  Since we know the condition evaluated to false, leave unexpandable properties in the condition so as not to cause an error
                     string expanded = _expander.ExpandIntoStringAndUnescape(_target.Condition, ExpanderOptions.ExpandPropertiesAndItems | ExpanderOptions.LeavePropertiesUnexpandedOnError, _target.ConditionLocation);
