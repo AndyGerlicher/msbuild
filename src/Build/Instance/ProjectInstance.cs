@@ -2384,6 +2384,7 @@ namespace Microsoft.Build.Execution
             _itemDefinitions = new RetrievableEntryHashSet<ProjectItemDefinitionInstance>(MSBuildNameIgnoreCaseComparer.Default);
             _hostServices = buildParameters.HostServices;
             this.ProjectRootElementCache = buildParameters.ProjectRootElementCache;
+            loggingService.HighestLoggerVerbosity = buildParameters.HighestLoggerVerbosity;
 
             this.EvaluatedItemElements = new List<ProjectItemElement>();
 

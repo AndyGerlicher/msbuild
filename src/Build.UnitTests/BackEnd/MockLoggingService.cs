@@ -96,7 +96,7 @@ namespace Microsoft.Build.UnitTests.BackEnd
             }
         }
 
-        public bool LogDiagnosticEvents { get; set; } = true;
+        public LoggerVerbosity HighestLoggerVerbosity { get; set; } = LoggerVerbosity.Diagnostic;
 
         /// <summary>
         /// Returns the number of initial nodes.

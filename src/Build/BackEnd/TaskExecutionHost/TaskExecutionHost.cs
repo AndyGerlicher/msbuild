@@ -39,12 +39,12 @@ namespace Microsoft.Build.BackEnd
     internal class TaskExecutionHost : ITaskExecutionHost, IDisposable
     {
         /// <summary>
-        /// Time interval in miliseconds to wait between receiving a cancelation signal and emitting the first warning that a non-cancelable task has not finished
+        /// Time interval in milliseconds to wait between receiving a cancelation signal and emitting the first warning that a non-cancelable task has not finished
         /// </summary>
         private const int CancelFirstWarningWaitInterval = 5000;
 
         /// <summary>
-        /// Time interval in miliseconds between subsequent warnings that a non-cancelable task has not finished
+        /// Time interval in milliseconds between subsequent warnings that a non-cancelable task has not finished
         /// </summary>
         private const int CancelWarningWaitInterval = 15000;
 
@@ -133,7 +133,7 @@ namespace Microsoft.Build.BackEnd
         private bool _cancelled;
 
         /// <summary>
-        /// Event which is signalled when a task is not executing.  Used for cancellation.
+        /// Event which is signaled when a task is not executing.  Used for cancellation.
         /// </summary>
         private ManualResetEvent _taskExecutionIdle = new ManualResetEvent(true);
 
@@ -160,9 +160,10 @@ namespace Microsoft.Build.BackEnd
         internal TaskExecutionHost(IBuildComponentHost host)
         {
             _buildComponentHost = host;
-            if (host != null && host.BuildParameters != null)
+            if (host?.BuildParameters != null)
             {
                 _logTaskInputs = host.BuildParameters.LogTaskInputs;
+                HighestLoggerVerbosity = host.BuildParameters.HighestLoggerVerbosity;
             }
 
             // If this is false, check the environment variable to see if it's there:
@@ -199,6 +200,9 @@ namespace Microsoft.Build.BackEnd
                 return _logTaskInputs;
             }
         }
+
+        /// <inheritdoc />
+        public LoggerVerbosity HighestLoggerVerbosity  { get; } = LoggerVerbosity.Diagnostic;
 
         /// <summary>
         /// The associated project.

@@ -607,7 +607,7 @@ namespace Microsoft.Build.BackEnd
             {
                 if (howToExecuteTask == TaskExecutionMode.ExecuteTaskAndGatherOutputs)
                 {
-                    if (_targetLoggingContext.LoggingService.LogDiagnosticEvents)
+                    if (_targetLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Detailed)
                     {
                         // Expand the expression for the Log.  Since we know the condition evaluated to false, leave unexpandable properties in the condition so as not to cause an error
                         string expanded = bucket.Expander.ExpandIntoStringAndUnescape(_targetChildInstance.Condition, ExpanderOptions.ExpandAll | ExpanderOptions.LeavePropertiesUnexpandedOnError, _targetChildInstance.ConditionLocation);

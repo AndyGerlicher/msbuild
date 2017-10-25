@@ -83,11 +83,11 @@ namespace Microsoft.Build.BackEnd.Logging
         }
 
         /// <summary>
-        /// Flag indicating if the build engine should produce and send diagnostic messages (<see cref="MessageImportance.Low"/>.
-        /// Many of these events are memory intensive to compute and this should be set to false when no Loggers are set to
-        /// receive Diagnostic level events.
+        /// When specified, provide a hint to the engine/tasks for the highest verbosity messages to see. This does not
+        /// provide a guarantee that no message above this verbosity will be produced, but should be used to avoid
+        /// cases where events are memory intensive to compute and there are no registered loggers to receive the event.
         /// </summary>
-        bool LogDiagnosticEvents { get; set; }
+        LoggerVerbosity HighestLoggerVerbosity { get; set; }
 
         /// <summary>
         /// Number of nodes in the system when it was initially started

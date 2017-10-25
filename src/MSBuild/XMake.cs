@@ -887,6 +887,46 @@ namespace Microsoft.Build.CommandLine
         /// </summary>
         private const string msbuildLogFileName = "msbuild.log";
 
+        private static LoggerVerbosity MaxVerbosity(LoggerVerbosity a, LoggerVerbosity b)
+        {
+            return a > b ? a : b;
+        }
+        private static LoggerVerbosity InferHighestVerbosity(ILogger logger)
+        {
+            var highestLoggerVerbosity = logger.Verbosity;
+
+            if (logger.Parameters == null)
+                return highestLoggerVerbosity;
+
+            // We can try to infer the verbosity from the logger parameters. This isn't perfect, but the worse
+            // case if we get this wrong extra log messages will be produced.
+            if (logger.Parameters.IndexOf("v=diag", StringComparison.OrdinalIgnoreCase) != -1 ||
+                logger.Parameters.IndexOf("verbosity=diag", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return LoggerVerbosity.Diagnostic;
+            }
+
+            if (logger.Parameters.IndexOf("v=detailed", StringComparison.OrdinalIgnoreCase) != -1 ||
+                logger.Parameters.IndexOf("verbosity=detailed", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return MaxVerbosity(LoggerVerbosity.Detailed, highestLoggerVerbosity);
+            }
+
+            if (logger.Parameters.IndexOf("v=normal", StringComparison.OrdinalIgnoreCase) != -1 ||
+                logger.Parameters.IndexOf("verbosity=normal", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return MaxVerbosity(LoggerVerbosity.Normal, highestLoggerVerbosity);
+            }
+
+            if (logger.Parameters.IndexOf("v=minimal", StringComparison.OrdinalIgnoreCase) != -1 ||
+                logger.Parameters.IndexOf("verbosity=minimal", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return MaxVerbosity(LoggerVerbosity.Minimal, highestLoggerVerbosity);
+            }
+
+            return highestLoggerVerbosity;
+        }
+
         /// <summary>
         /// Initializes the build engine, and starts the project building.
         /// </summary>
@@ -958,45 +998,17 @@ namespace Microsoft.Build.CommandLine
                     }
                 }
 
-                // HACK HACK: this enables task parameter logging.
-                // This is a hack for now to make sure the perf hit only happens
-                // on diagnostic. This should be changed to pipe it through properly,
-                // perhaps as part of a fuller tracing feature.
-                bool logTaskInputs = verbosity == LoggerVerbosity.Diagnostic;
-                bool logDiagnosticEvents = verbosity == LoggerVerbosity.Diagnostic;
-                if (!logTaskInputs)
+                var highestLoggerVerbosity = verbosity;
+                foreach (var logger in loggers)
                 {
-                    foreach (var logger in loggers)
-                    {
-                        if (logger.Parameters != null &&
-                            (logger.Parameters.IndexOf("V=DIAG", StringComparison.OrdinalIgnoreCase) != -1 ||
-                             logger.Parameters.IndexOf("VERBOSITY=DIAG", StringComparison.OrdinalIgnoreCase) != -1)
-                           )
-                        {
-                            logTaskInputs = true;
-                            logDiagnosticEvents = true;
-                            break;
-                        }
-                    }
+                    highestLoggerVerbosity = MaxVerbosity(InferHighestVerbosity(logger), highestLoggerVerbosity);
                 }
 
-                if (!logTaskInputs)
+                foreach (var logger in distributedLoggerRecords)
                 {
-                    foreach (var logger in distributedLoggerRecords)
-                    {
-                        if (logger.CentralLogger != null)
-                        {
-                            if (logger.CentralLogger.Parameters != null &&
-                                (logger.CentralLogger.Parameters.IndexOf("V=DIAG", StringComparison.OrdinalIgnoreCase) != -1 ||
-                                 logger.CentralLogger.Parameters.IndexOf("VERBOSITY=DIAG", StringComparison.OrdinalIgnoreCase) != -1)
-                               )
-                            {
-                                logTaskInputs = true;
-                                logDiagnosticEvents = true;
-                                break;
-                            }
-                        }
-                    }
+                    if (logger.CentralLogger != null)
+                        highestLoggerVerbosity = MaxVerbosity(InferHighestVerbosity(logger.CentralLogger),
+                            highestLoggerVerbosity);
                 }
 
                 ToolsetDefinitionLocations toolsetDefinitionLocations = ToolsetDefinitionLocations.Default;
@@ -1008,7 +1020,7 @@ namespace Microsoft.Build.CommandLine
                     toolsetDefinitionLocations,
                     cpuCount,
                     onlyLogCriticalEvents,
-                    logDiagnosticEvents
+                    highestLoggerVerbosity
                 );
 
                 if (debugger)
@@ -1028,8 +1040,8 @@ namespace Microsoft.Build.CommandLine
                 // If the user has requested that the schema be validated, do that here. 
                 if (needToValidateProject && !FileUtilities.IsSolutionFilename(projectFile))
                 {
-                    Microsoft.Build.Evaluation.Project project = projectCollection.LoadProject(projectFile, globalProperties, toolsVersion);
-                    Microsoft.Build.Evaluation.Toolset toolset = projectCollection.GetToolset((toolsVersion == null) ? project.ToolsVersion : toolsVersion);
+                    Project project = projectCollection.LoadProject(projectFile, globalProperties, toolsVersion);
+                    Toolset toolset = projectCollection.GetToolset(toolsVersion ?? project.ToolsVersion);
 
                     if (toolset == null)
                     {
@@ -1075,9 +1087,9 @@ namespace Microsoft.Build.CommandLine
                     parameters.MaxNodeCount = cpuCount;
                     parameters.Loggers = projectCollection.Loggers;
                     parameters.ForwardingLoggers = remoteLoggerRecords;
-                    parameters.ToolsetDefinitionLocations = Microsoft.Build.Evaluation.ToolsetDefinitionLocations.ConfigurationFile | Microsoft.Build.Evaluation.ToolsetDefinitionLocations.Registry;
+                    parameters.ToolsetDefinitionLocations = ToolsetDefinitionLocations.ConfigurationFile | ToolsetDefinitionLocations.Registry;
                     parameters.DetailedSummary = detailedSummary;
-                    parameters.LogTaskInputs = logTaskInputs;
+                    parameters.LogTaskInputs = highestLoggerVerbosity == LoggerVerbosity.Diagnostic;
                     parameters.WarningsAsErrors = warningsAsErrors;
                     parameters.WarningsAsMessages = warningsAsMessages;
 
@@ -1182,7 +1194,9 @@ namespace Microsoft.Build.CommandLine
                 }
             }
             // handle project file errors
-            catch (InvalidProjectFileException ex)
+            catch
+
+        (InvalidProjectFileException ex)
             {
                 // just eat the exception because it has already been logged
                 ErrorUtilities.VerifyThrow(ex.HasBeenLogged, "Should have been logged");

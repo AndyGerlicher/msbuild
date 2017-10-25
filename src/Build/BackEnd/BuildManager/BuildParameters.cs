@@ -201,11 +201,6 @@ namespace Microsoft.Build.Execution
         private bool _onlyLogCriticalEvents = false;
 
         /// <summary>
-        /// <see cref="LogDiagnosticEvents"/>
-        /// </summary>
-        private bool _logDiagnosticEvents = true;
-
-        /// <summary>
         /// A list of warnings to treat as errors.
         /// </summary>
         private ISet<string> _warningsAsErrors = null;
@@ -284,7 +279,7 @@ namespace Microsoft.Build.Execution
             _onlyLogCriticalEvents = projectCollection.OnlyLogCriticalEvents;
             _toolsetDefinitionLocations = projectCollection.ToolsetLocations;
             _defaultToolsVersion = projectCollection.DefaultToolsVersion;
-            _logDiagnosticEvents = projectCollection.LogDiagnosticEvents;
+            HighestLoggerVerbosity = projectCollection.HighestLoggerVerbosity;
 
             _globalProperties = new PropertyDictionary<ProjectPropertyInstance>(projectCollection.GlobalPropertiesCollection);
         }
@@ -335,7 +330,7 @@ namespace Microsoft.Build.Execution
             _useSynchronousLogging = other._useSynchronousLogging;
             _disableInProcNode = other._disableInProcNode;
             _logTaskInputs = other._logTaskInputs;
-            _logDiagnosticEvents = other._logDiagnosticEvents;
+            HighestLoggerVerbosity = other.HighestLoggerVerbosity;
             _logInitialPropertiesAndItems = other._logInitialPropertiesAndItems;
             _warningsAsErrors = other._warningsAsErrors == null ? null : new HashSet<string>(other._warningsAsErrors, StringComparer.OrdinalIgnoreCase);
             _warningsAsMessages = other._warningsAsMessages == null ? null : new HashSet<string>(other._warningsAsMessages, StringComparer.OrdinalIgnoreCase);
@@ -611,11 +606,7 @@ namespace Microsoft.Build.Execution
         /// Many of these events are memory intensive to compute and this should be set to false when no Loggers are set to
         /// receive Diagnostic level events.
         /// </summary>
-        public bool LogDiagnosticEvents
-        {
-            get { return _logDiagnosticEvents; }
-            set { _logDiagnosticEvents = value; }
-        }
+        public LoggerVerbosity HighestLoggerVerbosity { get; set; } = LoggerVerbosity.Diagnostic;
 
         /// <summary>
         /// A list of warnings to treat as errors.  To treat all warnings as errors, set this to an empty <see cref="HashSet{String}"/>.  
@@ -936,7 +927,11 @@ namespace Microsoft.Build.Execution
             translator.Translate(ref _shutdownInProcNodeOnBuildFinish);
             translator.Translate(ref _logTaskInputs);
             translator.Translate(ref _logInitialPropertiesAndItems);
-            translator.Translate(ref _logDiagnosticEvents);
+
+            // Translate HighestLoggerVerbosity as int (either direction)
+            int highestLoggerVerbosity = (int)HighestLoggerVerbosity;
+            translator.Translate(ref highestLoggerVerbosity);
+            HighestLoggerVerbosity = (LoggerVerbosity)highestLoggerVerbosity;
 
             // ProjectRootElementCache is not transmitted.
             // ResetCaches is not transmitted.

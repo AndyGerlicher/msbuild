@@ -63,9 +63,9 @@ namespace Microsoft.Build.Evaluation
         SkipEvaluation,
 
         /// <summary>
-        /// The <see cref="ProjectCollection.LogDiagnosticEvents"/> property changed.
+        /// The <see cref="ProjectCollection.HighestLoggerVerbosity"/> property changed.
         /// </summary>
-        LogDiagnosticEvents
+        HighestLoggerVerbosity
     }
 
     /// <summary>

@@ -724,7 +724,7 @@ namespace Microsoft.Build.Evaluation
             _evaluationLoggingContext = new EvaluationLoggingContext(loggingService, buildEventContext, _data.EvaluationId);
 
             _logProjectImportedEvents = Traits.Instance.EscapeHatches.LogProjectImports;
-            if (!_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+            if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity < LoggerVerbosity.Detailed)
             {
                 _logProjectImportedEvents = false;
             }
@@ -781,7 +781,7 @@ namespace Microsoft.Build.Evaluation
 #endif
             string projectFile = String.IsNullOrEmpty(_projectRootElement.ProjectFileLocation.File) ? "(null)" : _projectRootElement.ProjectFileLocation.File;
 
-            if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+            if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
             {
                 _evaluationLoggingContext.LogBuildEvent(
                     new ProjectEvaluationStartedEventArgs(ResourceUtilities.GetResourceString("EvaluationStarted"),
@@ -943,7 +943,7 @@ namespace Microsoft.Build.Evaluation
 
             _data.FinishEvaluation();
 
-            if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+            if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
             {
                 _evaluationLoggingContext.LogBuildEvent(
                     new ProjectEvaluationFinishedEventArgs(ResourceUtilities.GetResourceString("EvaluationFinished"),
@@ -1349,7 +1349,7 @@ namespace Microsoft.Build.Evaluation
             ProjectTargetInstance otherTarget = _data.GetTarget(targetName);
             if (otherTarget != null)
             {
-                if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+                if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
                 {
                     _evaluationLoggingContext.LogComment(MessageImportance.Low, "OverridingTarget", otherTarget.Name,
                         otherTarget.Location.File, targetName, targetElement.Location.File);
@@ -1393,7 +1393,7 @@ namespace Microsoft.Build.Evaluation
                 {
                     // This is a message, not a warning, because that enables people to speculatively extend the build of a project
                     // It's low importance as it's addressed to build authors
-                    if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+                    if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
                     {
                         _evaluationLoggingContext.LogComment(MessageImportance.Low,
                             "TargetDoesNotExistBeforeTargetMessage", unescapedBeforeTarget,
@@ -1421,7 +1421,7 @@ namespace Microsoft.Build.Evaluation
                 {
                     // This is a message, not a warning, because that enables people to speculatively extend the build of a project
                     // It's low importance as it's addressed to build authors
-                    if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+                    if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Detailed)
                     {
                         _evaluationLoggingContext.LogComment(MessageImportance.Low,
                             "TargetDoesNotExistAfterTargetMessage", unescapedAfterTarget,
@@ -1688,7 +1688,7 @@ namespace Microsoft.Build.Evaluation
 
         private void LogPropertyReassignment(P predecessor, P property, string location)
         {
-            if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+            if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
             {
                 string newValue = property.EvaluatedValue;
                 string oldValue = predecessor.EvaluatedValue;
@@ -2297,7 +2297,7 @@ namespace Microsoft.Build.Evaluation
             
             string extensionPropertyRefAsString = fallbackSearchPathMatch.MsBuildPropertyFormat;
 
-            if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+            if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
             {
                 _evaluationLoggingContext.LogComment(MessageImportance.Low, "SearchPathsForMSBuildExtensionsPath",
                     extensionPropertyRefAsString,
@@ -2337,7 +2337,7 @@ namespace Microsoft.Build.Evaluation
 
                 var newExpandedImportPath = importElement.Project.Replace(extensionPropertyRefAsString, extensionPathExpanded, StringComparison.OrdinalIgnoreCase);
 
-                if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+                if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
                 {
                     _evaluationLoggingContext.LogComment(MessageImportance.Low, "TryingExtensionsPath",
                         newExpandedImportPath, extensionPathExpanded);
@@ -2688,7 +2688,7 @@ namespace Microsoft.Build.Evaluation
                             {
                                 atleastOneImportIgnored = true;
 
-                                if (_evaluationLoggingContext.LoggingService.LogDiagnosticEvents)
+                                if (_evaluationLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Detailed)
                                 {
                                     ProjectImportedEventArgs eventArgs = new ProjectImportedEventArgs(
                                         importElement.Location.Line,

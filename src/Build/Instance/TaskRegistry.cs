@@ -423,7 +423,7 @@ namespace Microsoft.Build.Execution
                 string mostSpecificTaskName = (taskName.Length > record.RegisteredName.Length) ? taskName : record.RegisteredName;
                 taskFactory = record.GetTaskFactoryFromRegistrationRecord(mostSpecificTaskName, taskProjectFile, taskIdentityParameters, targetLoggingContext, elementLocation);
 
-                if (taskFactory != null && !retrievedFromCache && targetLoggingContext.LoggingService.LogDiagnosticEvents)
+                if (taskFactory != null && !retrievedFromCache && targetLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Diagnostic)
                 {
                     if (record.TaskFactoryAttributeName.Equals(RegisteredTaskRecord.AssemblyTaskFactory) || record.TaskFactoryAttributeName.Equals(RegisteredTaskRecord.TaskHostFactory))
                     {

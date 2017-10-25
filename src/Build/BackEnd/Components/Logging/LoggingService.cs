@@ -408,11 +408,7 @@ namespace Microsoft.Build.BackEnd.Logging
         }
 
         /// <inheritdoc />
-        public bool LogDiagnosticEvents
-        {
-            get { return false; }
-            set { }
-        }
+        public LoggerVerbosity HighestLoggerVerbosity { get; set; }
 
         /// <summary>
         /// Number of nodes in the system when the system is initially started
@@ -640,7 +636,7 @@ namespace Microsoft.Build.BackEnd.Logging
                 // Ask the component host if onlyLogCriticalEvents is true or false. If the host does
                 // not have this information default to false.
                 _onlyLogCriticalEvents = buildComponentHost.BuildParameters.OnlyLogCriticalEvents;
-                LogDiagnosticEvents = buildComponentHost.BuildParameters.LogDiagnosticEvents;
+                HighestLoggerVerbosity = buildComponentHost.BuildParameters.HighestLoggerVerbosity;
 
                 _serviceState = LoggingServiceState.Initialized;
             }

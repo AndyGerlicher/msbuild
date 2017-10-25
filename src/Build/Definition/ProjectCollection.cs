@@ -203,9 +203,9 @@ namespace Microsoft.Build.Evaluation
         private bool _onlyLogCriticalEvents;
 
         /// <summary>
-        /// <see cref="LogDiagnosticEvents"/>
+        /// <see cref="HighestLoggerVerbosity"/>
         /// </summary>
-        private bool _logDiagnosticEvents;
+        private LoggerVerbosity _highestLoggerVerbosity;
 
         /// <summary>
         /// Whether reevaluation is temporarily disabled on projects in this collection.
@@ -289,7 +289,7 @@ namespace Microsoft.Build.Evaluation
         /// <param name="loggers">The loggers to register. May be null.</param>
         /// <param name="toolsetDefinitionLocations">The locations from which to load toolsets.</param>
         public ProjectCollection(IDictionary<string, string> globalProperties, IEnumerable<ILogger> loggers, ToolsetDefinitionLocations toolsetDefinitionLocations)
-            : this(globalProperties, loggers, null, toolsetDefinitionLocations, 1 /* node count */, false /* do not only log critical events */)
+            : this(globalProperties, loggers, null, toolsetDefinitionLocations, maxNodeCount: 1, onlyLogCriticalEvents:false )
         {
         }
 
@@ -297,7 +297,7 @@ namespace Microsoft.Build.Evaluation
             IEnumerable<ForwardingLoggerRecord> remoteLoggers, ToolsetDefinitionLocations toolsetDefinitionLocations,
             int maxNodeCount, bool onlyLogCriticalEvents)
             : this(globalProperties, loggers, remoteLoggers, toolsetDefinitionLocations, maxNodeCount,
-                onlyLogCriticalEvents, logDiagnosticEvents: true)
+                onlyLogCriticalEvents, highestLoggerVerbosity: LoggerVerbosity.Diagnostic)
         {
         }
 
@@ -314,19 +314,19 @@ namespace Microsoft.Build.Evaluation
         /// <param name="toolsetDefinitionLocations">The locations from which to load toolsets.</param>
         /// <param name="maxNodeCount">The maximum number of nodes to use for building.</param>
         /// <param name="onlyLogCriticalEvents">If set to true, only critical events will be logged.</param>
-        public ProjectCollection(IDictionary<string, string> globalProperties, IEnumerable<ILogger> loggers, IEnumerable<ForwardingLoggerRecord> remoteLoggers, ToolsetDefinitionLocations toolsetDefinitionLocations, int maxNodeCount, bool onlyLogCriticalEvents, bool logDiagnosticEvents)
+        /// <param name="highestLoggerVerbosity">Hint to the engine to specify the highest verbosity messages to log. <see cref="HighestLoggerVerbosity"/></param>
+        public ProjectCollection(IDictionary<string, string> globalProperties, IEnumerable<ILogger> loggers, IEnumerable<ForwardingLoggerRecord> remoteLoggers, ToolsetDefinitionLocations toolsetDefinitionLocations, int maxNodeCount, bool onlyLogCriticalEvents, LoggerVerbosity highestLoggerVerbosity)
         {
             _loadedProjects = new LoadedProjectCollection();
             _toolsetDefinitionLocations = toolsetDefinitionLocations;
             MaxNodeCount = maxNodeCount;
             ProjectRootElementCache = new ProjectRootElementCache(false /* do not automatically reload changed files from disk */);
             OnlyLogCriticalEvents = onlyLogCriticalEvents;
-            logDiagnosticEvents = false;
-            LogDiagnosticEvents = logDiagnosticEvents;
+            HighestLoggerVerbosity = highestLoggerVerbosity;
 
             try
             {
-                CreateLoggingService(maxNodeCount, onlyLogCriticalEvents, logDiagnosticEvents);
+                CreateLoggingService(maxNodeCount, onlyLogCriticalEvents, highestLoggerVerbosity);
 
                 RegisterLoggers(loggers);
                 RegisterForwardingLoggers(remoteLoggers);
@@ -686,17 +686,17 @@ namespace Microsoft.Build.Evaluation
         }
 
         /// <summary>
-        /// Flag indicating if the build engine should produce and send diagnostic messages (<see cref="MessageImportance.Low"/>.
-        /// Many of these events are memory intensive to compute and this should be set to false when no Loggers are set to
-        /// receive Diagnostic level events.
+        /// When specified, provide a hint to the engine/tasks for the highest verbosity messages to see. This does not
+        /// provide a guarantee that no message above this verbosity will be produced, but should be used to avoid
+        /// cases where events are memory intensive to compute and there are no registered loggers to receive the event.
         /// </summary>
-        public bool LogDiagnosticEvents
+        public LoggerVerbosity HighestLoggerVerbosity
         {
             get
             {
                 lock (_locker)
                 {
-                    return _logDiagnosticEvents;
+                    return _highestLoggerVerbosity;
                 }
             }
 
@@ -705,11 +705,11 @@ namespace Microsoft.Build.Evaluation
                 ProjectCollectionChangedEventArgs eventArgs = null;
                 lock (_locker)
                 {
-                    if (_logDiagnosticEvents != value)
+                    if (_highestLoggerVerbosity != value)
                     {
-                        _logDiagnosticEvents = value;
+                        _highestLoggerVerbosity = value;
 
-                        eventArgs = new ProjectCollectionChangedEventArgs(ProjectCollectionChangedState.LogDiagnosticEvents);
+                        eventArgs = new ProjectCollectionChangedEventArgs(ProjectCollectionChangedState.HighestLoggerVerbosity);
                     }
                 }
 
@@ -1280,7 +1280,7 @@ namespace Microsoft.Build.Evaluation
 
                 // UNDONE: Logging service should not shut down when all loggers are unregistered.
                 // VS unregisters all loggers on the same project collection often. To workaround this, we have to create it again now!
-                CreateLoggingService(MaxNodeCount, OnlyLogCriticalEvents, LogDiagnosticEvents);
+                CreateLoggingService(MaxNodeCount, OnlyLogCriticalEvents, HighestLoggerVerbosity);
             }
 
             OnProjectCollectionChanged(new ProjectCollectionChangedEventArgs(ProjectCollectionChangedState.Loggers));
@@ -1738,12 +1738,14 @@ namespace Microsoft.Build.Evaluation
         /// <summary>
         /// Create a new logging service
         /// </summary>
-        private void CreateLoggingService(int maxCPUCount, bool onlyLogCriticalEvents, bool logDiagnosticEvents)
+        private void CreateLoggingService(int maxCPUCount, bool onlyLogCriticalEvents, LoggerVerbosity highestLoggerVerbosity)
         {
             _loggingService = BackEnd.Logging.LoggingService.CreateLoggingService(LoggerMode.Synchronous, 0 /*Evaluation can be done as if it was on node "0"*/);
             _loggingService.MaxCPUCount = maxCPUCount;
             _loggingService.OnlyLogCriticalEvents = onlyLogCriticalEvents;
-            _loggingService.LogDiagnosticEvents = logDiagnosticEvents;
+            _loggingService.HighestLoggerVerbosity = highestLoggerVerbosity;
+
+            Console.WriteLine($"HIGHEST LOGGER VERBOSITY: {highestLoggerVerbosity.ToString()}");
         }
 
 #if FEATURE_SYSTEM_CONFIGURATION

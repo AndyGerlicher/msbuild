@@ -65,6 +65,13 @@ namespace Microsoft.Build.BackEnd
         }
 
         /// <summary>
+        /// When specified, provide a hint to the engine/tasks for the highest verbosity messages to see. This does not
+        /// provide a guarantee that no message above this verbosity will be produced, but should be used to avoid
+        /// cases where events are memory intensive to compute and there are no registered loggers to receive the event.
+        /// </summary>
+        LoggerVerbosity HighestLoggerVerbosity { get; }
+
+        /// <summary>
         /// Initialize the host with the objects required to communicate with the host process.
         /// </summary>
         void InitializeForTask(IBuildEngine2 buildEngine, TargetLoggingContext loggingContext, ProjectInstance projectInstance, string taskName, ElementLocation taskLocation, ITaskHost taskHost, bool continueOnError,

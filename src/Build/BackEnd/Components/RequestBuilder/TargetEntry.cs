@@ -18,6 +18,7 @@ using Microsoft.Build.Debugging;
 #endif
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
 using ElementLocation = Microsoft.Build.Construction.ElementLocation;
 using InvalidProjectFileException = Microsoft.Build.Exceptions.InvalidProjectFileException;
@@ -352,7 +353,7 @@ namespace Microsoft.Build.BackEnd
                 _targetResult = new TargetResult(Array.Empty<TaskItem>(), new WorkUnitResult(WorkUnitResultCode.Skipped, WorkUnitActionCode.Continue, null));
                 _state = TargetEntryState.Completed;
 
-                if (projectLoggingContext.LoggingService.LogDiagnosticEvents)
+                if (projectLoggingContext.LoggingService.HighestLoggerVerbosity >= LoggerVerbosity.Detailed)
                 {
                     // Expand the expression for the Log.  Since we know the condition evaluated to false, leave unexpandable properties in the condition so as not to cause an error
                     string expanded = _expander.ExpandIntoStringAndUnescape(_target.Condition, ExpanderOptions.ExpandPropertiesAndItems | ExpanderOptions.LeavePropertiesUnexpandedOnError, _target.ConditionLocation);
