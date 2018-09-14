@@ -106,7 +106,7 @@ namespace Microsoft.Build.Collections
 
                 if (_single.HasValue)
                 {
-                    return new TKey[] { _single.Value.Key };
+                    return new[] { _single.Value.Key };
                 }
 
                 return _dictionary.Keys;
@@ -275,8 +275,7 @@ namespace Microsoft.Build.Collections
         /// </summary>
         public bool ContainsKey(TKey key)
         {
-            TValue discard;
-            return TryGetValue(key, out discard);
+            return TryGetValue(key, out _);
         }
 
         /// <summary>
@@ -428,7 +427,7 @@ namespace Microsoft.Build.Collections
                 
             }
 
-            return _dictionary.GetEnumerator();
+            return ((IDictionary)_dictionary).GetEnumerator();
         }
 
         /// <summary>

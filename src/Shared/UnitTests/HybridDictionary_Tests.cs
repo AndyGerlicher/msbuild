@@ -25,7 +25,7 @@ namespace Microsoft.Build.UnitTests.OM.Collections
         public void TestUsage()
         {
             var dict = new HybridDictionary<int, string>();
-            for (int i = 1; i < HybridDictionary<int, string>.MaxListSize + 2; i++)
+            for (int i = 1; i < 10; i++)
             {
                 dict[i] = (i * 2).ToString();
 
@@ -68,7 +68,7 @@ namespace Microsoft.Build.UnitTests.OM.Collections
 
             Random rand = new Random();
 
-            for (int capacity = 0; capacity < HybridDictionary<string, string>.MaxListSize + 2; capacity++)
+            for (int capacity = 0; capacity < 10; capacity++)
             {
                 var dict = new HybridDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
                 var shadow = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -79,7 +79,7 @@ namespace Microsoft.Build.UnitTests.OM.Collections
                     {
                         case 0:
                             // Set something
-                            if (shadow.Count < HybridDictionary<string, string>.MaxListSize + 2) // Don't bother exploring above here
+                            if (shadow.Count < 10) // Don't bother exploring above here
                             {
                                 string key = new String(keys[rand.Next(keys.Length)], 1);
                                 string value = rand.Next(10).ToString();
