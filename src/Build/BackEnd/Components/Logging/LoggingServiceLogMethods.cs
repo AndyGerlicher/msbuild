@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Build.Collections;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Framework.Profiler;
 using Microsoft.Build.Shared;
@@ -595,7 +596,7 @@ namespace Microsoft.Build.BackEnd.Logging
                 ErrorUtilities.VerifyThrow(_configCache.Value.HasConfiguration(projectInstanceId), "Cannot find the project configuration while injecting non-serialized data from out-of-proc node.");
                 var buildRequestConfiguration = _configCache.Value[projectInstanceId];
 
-                IDictionary<string, string> globalProperties = null;
+                IDictionary<string, string> globalProperties = ReadOnlyEmptyDictionary<string, string>.Instance;
                 if (!IncludeEvaluationPropertiesAndItems)
                 {
                     globalProperties = buildRequestConfiguration.GlobalProperties.ToDictionary();
