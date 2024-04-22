@@ -605,6 +605,22 @@ namespace Microsoft.Build.Execution
         /// <summary>
         /// Creates a mutable ProjectInstance directly, using the specified logging service.
         /// Assumes the project path is already normalized.
+        /// Used by the RequestBuilder.
+        /// </summary>
+        internal ProjectInstance(string projectFile, IDictionary<string, string> globalProperties, string toolsVersion, BuildParameters buildParameters, ILoggingService loggingService, BuildEventContext buildEventContext, ISdkResolverService sdkResolverService, int submissionId, ProjectLoadSettings? projectLoadSettings, EvaluationContext evaluationContext)
+        {
+            ErrorUtilities.VerifyThrowArgumentLength(projectFile, nameof(projectFile));
+            ErrorUtilities.VerifyThrowArgumentLengthIfNotNull(toolsVersion, nameof(toolsVersion));
+            ErrorUtilities.VerifyThrowArgumentNull(buildParameters, nameof(buildParameters));
+
+            ProjectRootElement xml = ProjectRootElement.OpenProjectOrSolution(projectFile, globalProperties, toolsVersion, buildParameters.ProjectRootElementCache, false /*Not explicitly loaded*/);
+
+            Initialize(xml, globalProperties, toolsVersion, null, 0 /* no solution version specified */, buildParameters, loggingService, buildEventContext, sdkResolverService, submissionId, projectLoadSettings, evaluationContext);
+        }
+
+        /// <summary>
+        /// Creates a mutable ProjectInstance directly, using the specified logging service.
+        /// Assumes the project path is already normalized.
         /// Used by this class when generating legacy solution wrappers.
         /// </summary>
         internal ProjectInstance(ProjectRootElement xml, IDictionary<string, string> globalProperties, string toolsVersion, BuildParameters buildParameters, ILoggingService loggingService, BuildEventContext buildEventContext, ISdkResolverService sdkResolverService, int submissionId)

@@ -23,7 +23,9 @@ using Microsoft.Build.BackEnd.Logging;
 using Microsoft.Build.BackEnd.SdkResolution;
 using Microsoft.Build.BuildCheck.Infrastructure;
 using Microsoft.Build.BuildCheck.Logging;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Eventing;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Experimental;
@@ -1910,12 +1912,22 @@ namespace Microsoft.Build.Execution
             var projectGraph = submission.BuildRequestData.ProjectGraph;
             if (projectGraph == null)
             {
+                var shared = Environment.GetEnvironmentVariable("EvalContext") == "1";
+                EvaluationContext evaluationContext = null;
+
+                if (shared)
+                {
+                    evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+                    Console.WriteLine("Using shared evaluation context!");
+                }
+
                 projectGraph = new ProjectGraph(
                     submission.BuildRequestData.ProjectGraphEntryPoints,
                     ProjectCollection.GlobalProjectCollection,
                     (path, properties, collection) =>
                     {
                         ProjectLoadSettings projectLoadSettings = _buildParameters.ProjectLoadSettings;
+
                         if (submission.BuildRequestData.Flags.HasFlag(BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports))
                         {
                             projectLoadSettings |= ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreEmptyImports;
@@ -1942,7 +1954,8 @@ namespace Microsoft.Build.Execution
                                 BuildEventContext.InvalidTaskId),
                             SdkResolverService,
                             submission.SubmissionId,
-                            projectLoadSettings);
+                            projectLoadSettings,
+                            evaluationContext);
                     });
             }
 
@@ -1954,6 +1967,7 @@ namespace Microsoft.Build.Execution
                     projectGraph.ConstructionMetrics.EdgeCount));
 
             Dictionary<ProjectGraphNode, BuildResult> resultsPerNode = null;
+            Environment.Exit(0);
 
             if (submission.BuildRequestData.GraphBuildOptions.Build)
             {

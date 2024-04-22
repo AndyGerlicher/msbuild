@@ -63,7 +63,7 @@ namespace Microsoft.Build.BackEnd.SdkResolution
                     key => new Lazy<SdkResult>(() =>
                     {
                         wasResultCached = false;
-
+                        Console.WriteLine($"actual resolving SDK: {sdk.Name}");
                         return base.ResolveSdk(submissionId, sdk, loggingContext, sdkReferenceLocation, solutionPath, projectPath, interactive, isRunningInVisualStudio, failOnUnresolvedSdk);
                     }));
 
